@@ -7,7 +7,7 @@ const Home = () => {
     let ws;
 
     const startNewGame = () => {
-        
+
         ws = new WebSocket('wss://localhost:7225/ws');
         ws.onopen = () => {
             console.log('WebSocket connected');
