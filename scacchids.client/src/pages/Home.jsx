@@ -8,7 +8,7 @@ const Home = () => {
 
     const startNewGame = () => {
         
-        ws = new WebSocket('ws://localhost:5000/ws');
+        ws = new WebSocket('wss://localhost:7225/ws');
         ws.onopen = () => {
             console.log('WebSocket connected');
             ws.send(JSON.stringify({ action: 'find_match' }));
@@ -25,6 +25,7 @@ const Home = () => {
         };
 
         ws.onclose = () => {
+            // se cambio pagina il ws non dovrebbe chiudersi, ma restare aperto
             console.log('WebSocket disconnected');
         };
     };

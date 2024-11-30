@@ -3,6 +3,7 @@ import './App.css';
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import Home from './pages/Home'
 import About from './pages/About';
 import ChessBoard from './pages/Game';
 
@@ -11,8 +12,8 @@ const App = () => {
         <Router>
             <Navbar />
             <Routes>
-                <Route path="/" element={<h1>Benvenuto!</h1>} />
-                <Route path="/chessboard" element={<ChessBoard />} />
+                <Route path="/" element={<Home />} />
+                <Route path="/game" element={<ChessBoard />} />
                 <Route path="/about" element={<About />} />
             </Routes>
         </Router>
