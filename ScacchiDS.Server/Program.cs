@@ -27,6 +27,4 @@ app.UseMiddleware<WebSocketMiddleware>();
 
 app.MapControllers();
 
-app.MapFallbackToFile("/index.html");
-
 app.Run();
