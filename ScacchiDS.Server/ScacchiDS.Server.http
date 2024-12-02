@@ -1,4 +1,4 @@
-@ScacchiDS.Server_HostAddress = http://localhost:5213
+@ScacchiDS.Server_HostAddress = http://localhost:5258
 
 GET {{ScacchiDS.Server_HostAddress}}/weatherforecast/
 Accept: application/json

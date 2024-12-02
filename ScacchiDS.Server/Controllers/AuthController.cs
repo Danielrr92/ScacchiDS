@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity.Data;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ScacchiDS.Server.Data;
@@ -8,16 +10,53 @@ using System;
 namespace ScacchiDS.Server.Controllers
 {
 
-    public class AuthController : BaseController
+    public class AuthController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        public AuthController(ApplicationDbContext context) : base(context)
+        public AuthController(ApplicationDbContext context) : base()
         {
             _context = context;
         }
 
+        //[HttpGet]
+        //[AllowAnonymous]
+        //public IActionResult Index()
+        //{
+        //    return View();
+        //}
 
+
+        public IActionResult LoginAdministrator()
+        {
+            //if (User.Identity.IsAuthenticated)
+            //{
+            //    if (_ApplicationUser != null)
+            //    {
+            //        //Check data password scaduta
+            //        DateTime? dataScaduta = CheckPasswordScaduta(_ApplicationUser);
+
+            //        //Controllo privacy 
+            //        string criptData = CheckPrivacyAccettata(_ApplicationUser);
+            //        if (criptData != null && criptData != "")
+            //        {
+            //            return RedirectToActionPermanent("Privacy", new { enc = criptData });
+            //        }
+
+            //        if (dataScaduta != null)
+            //        {
+            //            return RedirectToAction("PasswordScaduta", new { userId = _ApplicationUser.Id, dataScadenzaPassword = dataScaduta });
+            //        }
+            //        else
+            //        {
+            //            return RedirectToAction("Index", "Home", new { area = "" });
+            //        }
+            //    }
+            //}
+
+
+            return View();
+        }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
@@ -25,15 +64,15 @@ namespace ScacchiDS.Server.Controllers
             if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
                 return BadRequest(new { message = "Email e Password sono obbligatori" });
 
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == request.Email);
-            if (user == null)
-                return Unauthorized(new { message = "Accesso negato" });
-            bool isPasswordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.Password);
-            if (!isPasswordValid) 
-                return Unauthorized(new { message = "Accesso negato" });
+            //var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == request.Email);
+            //if (user == null)
+            //    return Unauthorized(new { message = "Accesso negato" });
+            //bool isPasswordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.Password);
+            //if (!isPasswordValid) 
+            //    return Unauthorized(new { message = "Accesso negato" });
 
-            // Generate token or session here
-            return Ok(new { message = "Login riuscito", userId = user.Id });
+            //// Generate token or session here
+            return Ok(new { message = "Login riuscito", userId = 1 });
         }
 
 
@@ -44,20 +83,20 @@ namespace ScacchiDS.Server.Controllers
             if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
                 return BadRequest(new { message = "Tutti i campi devono essere compilati per la registrazione" });
 
-            var existingUser = await _context.Users.SingleOrDefaultAsync(u => u.Email == request.Email);
-            if (existingUser != null)
-                return Conflict(new { message = "L'Email inserita è già stata utilizzata." });
+            //var existingUser = await _context.Users.SingleOrDefaultAsync(u => u.Email == request.Email);
+            //if (existingUser != null)
+            //    return Conflict(new { message = "L'Email inserita è già stata utilizzata." });
 
-            var user = new User
-            {
-                Username = request.Username,
-                Email = request.Email,
-                Password = HashPassword(request.Password), 
-                CreatedAt = DateTime.UtcNow,
-            };
+            //var user = new User
+            //{
+            //    Username = request.Username,
+            //    Email = request.Email,
+            //    Password = HashPassword(request.Password), 
+            //    CreatedAt = DateTime.UtcNow,
+            //};
 
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            //_context.Users.Add(user);
+            //await _context.SaveChangesAsync();
 
             return Ok(new { message = "Registrazione avvenuta con successo" });
         }
