@@ -22,8 +22,8 @@ namespace ScacchiDS.Server.Models
         public virtual Giocatore GiocatoreNero { get; set; }
 
         [ForeignKey("EsitoPartita")]
-        public int? EsitoId { get; set; }
-        public virtual EsitoPartita Esito { get; set; }
+        public int? EsitoPartitaId { get; set; }
+        public virtual EsitoPartita EsitoPartita { get; set; }
 
         public Partita()
         {
