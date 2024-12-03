@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ScacchiDS.Server.Models
 {
@@ -7,9 +8,10 @@ namespace ScacchiDS.Server.Models
         [Key]
         public int Id { get; set; }
 
-        [Required]
-        public string AspNetUserId { get; set; }  
-        public virtual ApplicationUser AspNetUser { get; set; }  // Navigational property
+        [ForeignKey("AspNetUser")]
+        public string? AspNetUserId { get; set; } // Chiave esterna opzionale
+
+        public virtual ApplicationUser? AspNetUser { get; set; } // Proprietà di navigazione
 
         [Required]
         public string Username { get; set; }

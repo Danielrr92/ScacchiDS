@@ -1,4 +1,5 @@
-﻿using System.Net.WebSockets;
+﻿using ScacchiDS.Server.Services;
+using System.Net.WebSockets;
 using System.Text;
 
 namespace ScacchiDS.Server.WebSockets
@@ -6,6 +7,13 @@ namespace ScacchiDS.Server.WebSockets
     public class WebSocketHandler
     {
         private static readonly List<WebSocket> WaitingPlayers = new List<WebSocket>();
+
+        private readonly GameService _gameService;
+
+        public WebSocketHandler(GameService gameService)
+        {
+            _gameService = gameService;
+        }
 
         public async Task HandleConnectionAsync(HttpContext context)
         {
@@ -43,6 +51,7 @@ namespace ScacchiDS.Server.WebSockets
 
         private async Task NotifyMatchFound(WebSocket player1, WebSocket player2)
         {
+            PartitaService partitaService = new PartitaService()
             var message = Encoding.UTF8.GetBytes("{\"action\":\"match_found\"}");
             await player1.SendAsync(new ArraySegment<byte>(message), WebSocketMessageType.Text, true, CancellationToken.None);
             await player2.SendAsync(new ArraySegment<byte>(message), WebSocketMessageType.Text, true, CancellationToken.None);
