@@ -20,5 +20,12 @@ namespace ScacchiDS.Server.Models
 
         [MaxLength(1)]
         public string Simbolo { get; set; }  // Es. "P" per Pedone, "T" per Torre, ecc.
+
+        public const string SIMBOLO_RE = "R";
+        public const string SIMBOLO_DONNA = "D"; 
+        public const string SIMBOLO_TORRE = "T";
+        public const string SIMBOLO_ALFIERE = "A";
+        public const string SIMBOLO_CAVALLO = "C";
+        public const string SIMBOLO_PEDONE = "";
     }
 }

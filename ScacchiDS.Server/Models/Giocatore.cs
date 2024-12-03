@@ -14,7 +14,7 @@ namespace ScacchiDS.Server.Models
         public virtual ApplicationUser? AspNetUser { get; set; } // Proprietà di navigazione
 
         [Required]
-        public string Username { get; set; }
+        public string sessionId { get; set; }
 
         // Data di registrazione del giocatore, se necessario
         public DateTime DataRegistrazione { get; set; }
