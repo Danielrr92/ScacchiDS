@@ -2,7 +2,7 @@
 
 namespace ScacchiDS.Server.Models
 {
-    public class ScacchieraServer
+    public class Scacchiera
     {
         
     }
