@@ -1,5 +1,6 @@
 ﻿using ScacchiDS.Server.Data;
 using ScacchiDS.Server.Models;
+using System.Net.WebSockets;
 
 namespace ScacchiDS.Server.Services
 {
@@ -13,19 +14,10 @@ namespace ScacchiDS.Server.Services
         }
 
 
-        public async Task<Game> CreateNewGameAsync(string player1Id, string player2Id)
+        public async Task CreateNewGameAsync(string gameSessionId, string sessionIdPlayer1, string sessionIdPlayer2)
         {
-            var newGame = new Game
-            {
-                Player1Id = player1Id,
-                Player2Id = player2Id,
-                State = "Waiting",
-                CreatedAt = DateTime.UtcNow
-            };
+            
 
-            _context.Games.Add(newGame);
-            await _context.SaveChangesAsync();
-            return newGame;
         }
     }
 }

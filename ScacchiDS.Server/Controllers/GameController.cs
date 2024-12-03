@@ -4,13 +4,13 @@ using ScacchiDS.Server.Services;
 
 namespace ScacchiDS.Server.Controllers
 {
-    public class PartitaController : Controller
+    public class GameController : Controller
     {
-        private readonly PartitaService _partitaService;
+        private readonly GameService _gameService;
 
-        public PartitaController(PartitaService partitaService)
+        public GameController(GameService gameServce)
         {
-            _partitaService = partitaService;
+            _gameService = gameServce;
         }
 
 
