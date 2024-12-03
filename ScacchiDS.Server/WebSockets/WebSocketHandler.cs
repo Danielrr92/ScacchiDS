@@ -42,8 +42,6 @@ namespace ScacchiDS.Server.WebSockets
                 //id sessione proprietario per il giocatore che clicca nuova partita, sia esso loggato/registrato oppure no
                 var sessionIdConnectedPlayer = Guid.NewGuid().ToString();
 
-                
-
                 if (WaitingPlayers.Count > 0)
                 {
                     //inserisco il giocatore nella lista dei giocatori connessi
@@ -72,7 +70,7 @@ namespace ScacchiDS.Server.WebSockets
             await ReceiveMessagesAsync(webSocket);
         }
 
-        private async Task StartNewGame( string sessionIdPlayer1, string sessionIdPlayer2)
+        private async Task StartNewGame(string sessionIdPlayer1, string sessionIdPlayer2)
         {
             //genero l'id della partita e la inserisco tra le partite cominciate
             var gameSessionId = Guid.NewGuid().ToString();
