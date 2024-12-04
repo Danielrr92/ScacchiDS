@@ -14,16 +14,16 @@ namespace ScacchiDS.Server.Models
         public DateTime? DataFine { get; set; }
 
         [ForeignKey("GiocatoreBianco")]
-        public int GiocatoreBiancoId { get; set; }
+        public string GiocatoreBiancoSessionId { get; set; }
         public virtual Giocatore GiocatoreBianco { get; set; }
 
         [ForeignKey("GiocatoreNero")]
-        public int GiocatoreNeroId { get; set; }
+        public string GiocatoreNeroSessionId { get; set; }
         public virtual Giocatore GiocatoreNero { get; set; }
 
         [ForeignKey("EsitoPartita")]
         public int? EsitoPartitaId { get; set; }
-        public virtual EsitoPartita EsitoPartita { get; set; }
+        public virtual EsitoPartita? EsitoPartita { get; set; }
 
         public Partita()
         {

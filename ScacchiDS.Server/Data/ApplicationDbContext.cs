@@ -28,13 +28,13 @@ namespace ScacchiDS.Server.Data
             builder.Entity<Partita>()
                 .HasOne(p => p.GiocatoreBianco)
                 .WithMany()
-                .HasForeignKey(p => p.GiocatoreBiancoId)
+                .HasForeignKey(p => p.GiocatoreBiancoSessionId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Partita>()
                 .HasOne(p => p.GiocatoreNero)
                 .WithMany()
-                .HasForeignKey(p => p.GiocatoreNeroId)
+                .HasForeignKey(p => p.GiocatoreNeroSessionId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Mossa>()
@@ -46,7 +46,7 @@ namespace ScacchiDS.Server.Data
             builder.Entity<Mossa>()
                 .HasOne(m => m.Giocatore)
                 .WithMany()
-                .HasForeignKey(m => m.GiocatoreId)
+                .HasForeignKey(m => m.GiocatoreSessionId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Esegui il seeding per la tabella Esito

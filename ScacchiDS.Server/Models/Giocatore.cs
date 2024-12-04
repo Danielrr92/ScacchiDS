@@ -6,19 +6,16 @@ namespace ScacchiDS.Server.Models
     public class Giocatore
     {
         [Key]
-        public int Id { get; set; }
+        public string? sessionId { get; set; }
+
 
         [ForeignKey("AspNetUser")]
-        public string? AspNetUserId { get; set; } // Chiave esterna opzionale
+        public string? AspNetUserId { get; set; } 
+        public virtual ApplicationUser? AspNetUser { get; set; }    
 
-        public virtual ApplicationUser? AspNetUser { get; set; } // Proprietà di navigazione
+        
+        public DateTime DataOraCreazione { get; set; }
 
-        [Required]
-        public string sessionId { get; set; }
-
-        // Data di registrazione del giocatore, se necessario
-        public DateTime DataRegistrazione { get; set; }
-
-        // Altre proprietà che potrebbero essere rilevanti
+        
     }
 }

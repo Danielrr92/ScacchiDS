@@ -1,4 +1,5 @@
 ﻿using ScacchiDS.Server.Data;
+using ScacchiDS.Server.DTOs;
 using ScacchiDS.Server.Models;
 using System.Net.WebSockets;
 
@@ -14,7 +15,7 @@ namespace ScacchiDS.Server.Services
         }
 
 
-        public async Task CreateNewGameAsync(string gameSessionId, string sessionIdPlayer1, string sessionIdPlayer2)
+        public async Task<GameDto> CreateNewGameAsync(string gameSessionId, string sessionIdPlayer1, string sessionIdPlayer2)
         {
             //scacchiera
             Scacchiera scacchiera = new Scacchiera();
@@ -33,8 +34,14 @@ namespace ScacchiDS.Server.Services
             partita.GiocatoreNero = isPlayer1White ? player2 : player1;
 
 
-
-
+            GameDto gameDto = new GameDto();
+            gameDto.GameSessionId = gameSessionId;
+            gameDto.Player1SessionId = sessionIdPlayer1;
+            gameDto.Player2SessionId = sessionIdPlayer2;
+            gameDto.Player1Color = isPlayer1White ? Colore.BIANCO : Colore.NERO;
+            gameDto.Player2Color = isPlayer1White ? Colore.NERO : Colore.BIANCO;
+            gameDto.ChessBoard = scacchiera.ToStringArray();
+            return gameDto;
         }
     }
 }

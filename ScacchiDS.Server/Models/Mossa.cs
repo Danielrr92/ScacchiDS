@@ -16,7 +16,7 @@ namespace ScacchiDS.Server.Models
         public int NumeroMossa { get; set; }
 
         [ForeignKey("Giocatore")]
-        public int GiocatoreId { get; set; }
+        public string GiocatoreSessionId { get; set; }
         public virtual Giocatore Giocatore { get; set; }
 
         [Required]

@@ -20,7 +20,7 @@ const Home = () => {
                 console.log('Match found!', message);
                 // Naviga alla scacchiera con i dettagli del match
                 console.log('Navigating to the game page...');
-                navigate('/game'); // Cambia l'URL e naviga alla pagina del gioco
+                //navigate('/game'); // Cambia l'URL e naviga alla pagina del gioco
             }
         };
 

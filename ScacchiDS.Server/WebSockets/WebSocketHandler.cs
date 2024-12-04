@@ -2,6 +2,8 @@
 using System.Net.WebSockets;
 using System.Text;
 using System.Collections.Concurrent;
+using ScacchiDS.Server.DTOs;
+using System.Text.Json;
 
 namespace ScacchiDS.Server.WebSockets
 {
@@ -51,12 +53,24 @@ namespace ScacchiDS.Server.WebSockets
                 // Crea il nuovo match
                 var gameSessionId = Guid.NewGuid().ToString();
                 Games[gameSessionId] = (sessionIdConnectedPlayer, opponent.SessionId);
+                try
+                {
+                    using (var scope = _serviceProvider.CreateScope())
+                    {
+                        GameService gameService = scope.ServiceProvider.GetRequiredService<GameService>();
+                        GameDto gameDTO = await gameService.CreateNewGameAsync(gameSessionId, sessionIdConnectedPlayer, opponent.SessionId);
 
-                var gameService = _serviceProvider.GetRequiredService<GameService>();
-                await gameService.CreateNewGameAsync(gameSessionId, sessionIdConnectedPlayer, opponent.SessionId);
+                        // Notifica ai giocatori che la partita è stata creata
+                        await NotifyGameCreated(webSocket, opponent.Socket, gameDTO);
+                    }
+                        
+                }
+                catch (Exception ex)
+                {
 
-                // Notifica ai giocatori che la partita è stata creata
-                await NotifyGameCreated(webSocket, opponent.Socket);
+                    throw;
+                }
+                
             }
             else
             {
@@ -66,11 +80,27 @@ namespace ScacchiDS.Server.WebSockets
             await ReceiveMessagesAsync(webSocket);
         }
 
-        private async Task NotifyGameCreated(WebSocket player1, WebSocket player2)
+        private async Task NotifyGameCreated(WebSocket player1, WebSocket player2, GameDto gameDTO)
         {
-            var message = Encoding.UTF8.GetBytes("{\"action\":\"match_found\"}");
-            await player1.SendAsync(new ArraySegment<byte>(message), WebSocketMessageType.Text, true, CancellationToken.None);
-            await player2.SendAsync(new ArraySegment<byte>(message), WebSocketMessageType.Text, true, CancellationToken.None);
+            try
+            {
+                var response = new
+                {
+                    action = "match_found",
+                    data = gameDTO
+                };
+
+                string message = JsonSerializer.Serialize(response);
+                var messageBytes = Encoding.UTF8.GetBytes(message);
+                await player1.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+                await player2.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+            
         }
 
         private async Task ReceiveMessagesAsync(WebSocket webSocket)
