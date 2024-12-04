@@ -289,26 +289,6 @@ namespace ScacchiDS.Server.Migrations
                         });
                 });
 
-            modelBuilder.Entity("ScacchiDS.Server.Models.Giocatore", b =>
-                {
-                    b.Property<string>("sessionId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("AspNetUserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("DataOraCreazione")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("sessionId");
-
-                    b.HasIndex("AspNetUserId")
-                        .IsUnique()
-                        .HasFilter("[AspNetUserId] IS NOT NULL");
-
-                    b.ToTable("Giocatori");
-                });
-
             modelBuilder.Entity("ScacchiDS.Server.Models.Mossa", b =>
                 {
                     b.Property<int>("Id")
@@ -317,10 +297,6 @@ namespace ScacchiDS.Server.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("GiocatoreSessionId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<int>("NumeroMossa")
                         .HasColumnType("int");
 
@@ -328,6 +304,9 @@ namespace ScacchiDS.Server.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("PezzoId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PlayerId")
                         .HasColumnType("int");
 
                     b.Property<string>("PosizioneFinale")
@@ -342,11 +321,11 @@ namespace ScacchiDS.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GiocatoreSessionId");
-
                     b.HasIndex("PartitaId");
 
                     b.HasIndex("PezzoId");
+
+                    b.HasIndex("PlayerId");
 
                     b.ToTable("Mosse");
                 });
@@ -368,21 +347,23 @@ namespace ScacchiDS.Server.Migrations
                     b.Property<int?>("EsitoPartitaId")
                         .HasColumnType("int");
 
-                    b.Property<string>("GiocatoreBiancoSessionId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int?>("Player1Id")
+                        .HasColumnType("int");
 
-                    b.Property<string>("GiocatoreNeroSessionId")
+                    b.Property<int?>("Player2Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("sessionId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("EsitoPartitaId");
 
-                    b.HasIndex("GiocatoreBiancoSessionId");
+                    b.HasIndex("Player1Id");
 
-                    b.HasIndex("GiocatoreNeroSessionId");
+                    b.HasIndex("Player2Id");
 
                     b.ToTable("Partite");
                 });
@@ -399,12 +380,18 @@ namespace ScacchiDS.Server.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Simbolo")
-                        .IsRequired()
                         .HasMaxLength(1)
                         .HasColumnType("nvarchar(1)");
 
                     b.Property<int>("TipoPezzoId")
                         .HasColumnType("int");
+
+                    b.Property<string>("notazionePerDTO")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("posizione")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -413,6 +400,38 @@ namespace ScacchiDS.Server.Migrations
                     b.HasIndex("TipoPezzoId");
 
                     b.ToTable("Pezzo");
+                });
+
+            modelBuilder.Entity("ScacchiDS.Server.Models.Player", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AspNetUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("ColoreId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DataOraCreazione")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("sessionId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AspNetUserId")
+                        .IsUnique()
+                        .HasFilter("[AspNetUserId] IS NOT NULL");
+
+                    b.HasIndex("ColoreId");
+
+                    b.ToTable("Giocatori");
                 });
 
             modelBuilder.Entity("ScacchiDS.Server.Models.TipoPezzo", b =>
@@ -516,23 +535,8 @@ namespace ScacchiDS.Server.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ScacchiDS.Server.Models.Giocatore", b =>
-                {
-                    b.HasOne("ScacchiDS.Server.Models.ApplicationUser", "AspNetUser")
-                        .WithOne("Giocatore")
-                        .HasForeignKey("ScacchiDS.Server.Models.Giocatore", "AspNetUserId");
-
-                    b.Navigation("AspNetUser");
-                });
-
             modelBuilder.Entity("ScacchiDS.Server.Models.Mossa", b =>
                 {
-                    b.HasOne("ScacchiDS.Server.Models.Giocatore", "Giocatore")
-                        .WithMany()
-                        .HasForeignKey("GiocatoreSessionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("ScacchiDS.Server.Models.Partita", "Partita")
                         .WithMany()
                         .HasForeignKey("PartitaId")
@@ -545,11 +549,17 @@ namespace ScacchiDS.Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Giocatore");
+                    b.HasOne("ScacchiDS.Server.Models.Player", "Player")
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Partita");
 
                     b.Navigation("Pezzo");
+
+                    b.Navigation("Player");
                 });
 
             modelBuilder.Entity("ScacchiDS.Server.Models.Partita", b =>
@@ -558,23 +568,21 @@ namespace ScacchiDS.Server.Migrations
                         .WithMany()
                         .HasForeignKey("EsitoPartitaId");
 
-                    b.HasOne("ScacchiDS.Server.Models.Giocatore", "GiocatoreBianco")
+                    b.HasOne("ScacchiDS.Server.Models.Player", "Player1")
                         .WithMany()
-                        .HasForeignKey("GiocatoreBiancoSessionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("Player1Id")
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("ScacchiDS.Server.Models.Giocatore", "GiocatoreNero")
+                    b.HasOne("ScacchiDS.Server.Models.Player", "Player2")
                         .WithMany()
-                        .HasForeignKey("GiocatoreNeroSessionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("Player2Id")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("EsitoPartita");
 
-                    b.Navigation("GiocatoreBianco");
+                    b.Navigation("Player1");
 
-                    b.Navigation("GiocatoreNero");
+                    b.Navigation("Player2");
                 });
 
             modelBuilder.Entity("ScacchiDS.Server.Models.Pezzo", b =>
@@ -594,6 +602,23 @@ namespace ScacchiDS.Server.Migrations
                     b.Navigation("Colore");
 
                     b.Navigation("TipoPezzo");
+                });
+
+            modelBuilder.Entity("ScacchiDS.Server.Models.Player", b =>
+                {
+                    b.HasOne("ScacchiDS.Server.Models.ApplicationUser", "AspNetUser")
+                        .WithOne("Giocatore")
+                        .HasForeignKey("ScacchiDS.Server.Models.Player", "AspNetUserId");
+
+                    b.HasOne("ScacchiDS.Server.Models.Colore", "Colore")
+                        .WithMany()
+                        .HasForeignKey("ColoreId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AspNetUser");
+
+                    b.Navigation("Colore");
                 });
 
             modelBuilder.Entity("ScacchiDS.Server.Models.ApplicationUser", b =>

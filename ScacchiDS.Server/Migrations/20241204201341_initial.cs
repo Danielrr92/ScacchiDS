@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ScacchiDS.Server.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -203,9 +203,10 @@ namespace ScacchiDS.Server.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    AspNetUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Username = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DataRegistrazione = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    sessionId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AspNetUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    ColoreId = table.Column<int>(type: "int", nullable: false),
+                    DataOraCreazione = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -214,6 +215,11 @@ namespace ScacchiDS.Server.Migrations
                         name: "FK_Giocatori_AspNetUsers_AspNetUserId",
                         column: x => x.AspNetUserId,
                         principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Giocatori_Colori_ColoreId",
+                        column: x => x.ColoreId,
+                        principalTable: "Colori",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -226,7 +232,9 @@ namespace ScacchiDS.Server.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TipoPezzoId = table.Column<int>(type: "int", nullable: false),
                     ColoreId = table.Column<int>(type: "int", nullable: false),
-                    Simbolo = table.Column<string>(type: "nvarchar(1)", maxLength: 1, nullable: false)
+                    posizione = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Simbolo = table.Column<string>(type: "nvarchar(1)", maxLength: 1, nullable: true),
+                    notazionePerDTO = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -251,29 +259,30 @@ namespace ScacchiDS.Server.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    sessionId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DataInizio = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DataFine = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    GiocatoreBiancoId = table.Column<int>(type: "int", nullable: false),
-                    GiocatoreNeroId = table.Column<int>(type: "int", nullable: false),
-                    EsitoId = table.Column<int>(type: "int", nullable: true)
+                    Player1Id = table.Column<int>(type: "int", nullable: true),
+                    Player2Id = table.Column<int>(type: "int", nullable: true),
+                    EsitoPartitaId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Partite", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Partite_EsitiPartita_EsitoId",
-                        column: x => x.EsitoId,
+                        name: "FK_Partite_EsitiPartita_EsitoPartitaId",
+                        column: x => x.EsitoPartitaId,
                         principalTable: "EsitiPartita",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Partite_Giocatori_GiocatoreBiancoId",
-                        column: x => x.GiocatoreBiancoId,
+                        name: "FK_Partite_Giocatori_Player1Id",
+                        column: x => x.Player1Id,
                         principalTable: "Giocatori",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Partite_Giocatori_GiocatoreNeroId",
-                        column: x => x.GiocatoreNeroId,
+                        name: "FK_Partite_Giocatori_Player2Id",
+                        column: x => x.Player2Id,
                         principalTable: "Giocatori",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -287,7 +296,7 @@ namespace ScacchiDS.Server.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     PartitaId = table.Column<int>(type: "int", nullable: false),
                     NumeroMossa = table.Column<int>(type: "int", nullable: false),
-                    GiocatoreId = table.Column<int>(type: "int", nullable: false),
+                    PlayerId = table.Column<int>(type: "int", nullable: false),
                     PezzoId = table.Column<int>(type: "int", nullable: false),
                     PosizioneIniziale = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: false),
                     PosizioneFinale = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: false)
@@ -296,8 +305,8 @@ namespace ScacchiDS.Server.Migrations
                 {
                     table.PrimaryKey("PK_Mosse", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Mosse_Giocatori_GiocatoreId",
-                        column: x => x.GiocatoreId,
+                        name: "FK_Mosse_Giocatori_PlayerId",
+                        column: x => x.PlayerId,
                         principalTable: "Giocatori",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -391,12 +400,13 @@ namespace ScacchiDS.Server.Migrations
                 name: "IX_Giocatori_AspNetUserId",
                 table: "Giocatori",
                 column: "AspNetUserId",
-                unique: true);
+                unique: true,
+                filter: "[AspNetUserId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Mosse_GiocatoreId",
-                table: "Mosse",
-                column: "GiocatoreId");
+                name: "IX_Giocatori_ColoreId",
+                table: "Giocatori",
+                column: "ColoreId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Mosse_PartitaId",
@@ -409,19 +419,24 @@ namespace ScacchiDS.Server.Migrations
                 column: "PezzoId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Partite_EsitoId",
-                table: "Partite",
-                column: "EsitoId");
+                name: "IX_Mosse_PlayerId",
+                table: "Mosse",
+                column: "PlayerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Partite_GiocatoreBiancoId",
+                name: "IX_Partite_EsitoPartitaId",
                 table: "Partite",
-                column: "GiocatoreBiancoId");
+                column: "EsitoPartitaId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Partite_GiocatoreNeroId",
+                name: "IX_Partite_Player1Id",
                 table: "Partite",
-                column: "GiocatoreNeroId");
+                column: "Player1Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Partite_Player2Id",
+                table: "Partite",
+                column: "Player2Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Pezzo_ColoreId",
@@ -471,13 +486,13 @@ namespace ScacchiDS.Server.Migrations
                 name: "Giocatori");
 
             migrationBuilder.DropTable(
-                name: "Colori");
-
-            migrationBuilder.DropTable(
                 name: "TipiPezzo");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Colori");
         }
     }
 }

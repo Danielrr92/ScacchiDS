@@ -13,18 +13,16 @@ namespace ScacchiDS.Server.Controllers
     public class AuthController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(ApplicationDbContext context) : base()
+
+        public AuthController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, ILogger<AuthController> logger) : base()
         {
             _context = context;
+            _userManager = userManager;
+            _logger = logger;
         }
-
-        //[HttpGet]
-        //[AllowAnonymous]
-        //public IActionResult Index()
-        //{
-        //    return View();
-        //}
 
 
         public IActionResult LoginAdministrator()

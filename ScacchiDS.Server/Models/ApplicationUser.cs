@@ -5,6 +5,6 @@ namespace ScacchiDS.Server.Models
 {
     public class ApplicationUser : IdentityUser
     {
-        public virtual Giocatore? Giocatore { get; set; }  // Navigational property (optional)
+        public virtual Player? Giocatore { get; set; }  // Navigational property (optional)
     }
 }

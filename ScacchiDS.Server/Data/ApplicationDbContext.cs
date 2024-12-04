@@ -8,7 +8,7 @@ namespace ScacchiDS.Server.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-        public DbSet<Giocatore> Giocatori { get; set; }
+        public DbSet<Player> Giocatori { get; set; }
         public DbSet<Partita> Partite { get; set; }
         public DbSet<Mossa> Mosse { get; set; }
         public DbSet<EsitoPartita> EsitiPartita { get; set; }
@@ -26,15 +26,15 @@ namespace ScacchiDS.Server.Data
 
             // Configurazione delle relazioni (se necessaria)
             builder.Entity<Partita>()
-                .HasOne(p => p.GiocatoreBianco)
+                .HasOne(p => p.Player1)
                 .WithMany()
-                .HasForeignKey(p => p.GiocatoreBiancoSessionId)
+                .HasForeignKey(p => p.Player1Id)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Partita>()
-                .HasOne(p => p.GiocatoreNero)
+                .HasOne(p => p.Player2)
                 .WithMany()
-                .HasForeignKey(p => p.GiocatoreNeroSessionId)
+                .HasForeignKey(p => p.Player2Id)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Mossa>()
@@ -44,9 +44,9 @@ namespace ScacchiDS.Server.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<Mossa>()
-                .HasOne(m => m.Giocatore)
+                .HasOne(m => m.Player)
                 .WithMany()
-                .HasForeignKey(m => m.GiocatoreSessionId)
+                .HasForeignKey(m => m.PlayerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Esegui il seeding per la tabella Esito

@@ -8,28 +8,35 @@ namespace ScacchiDS.Server.Models
         [Key]
         public int Id { get; set; }
 
+
         [ForeignKey("Partita")]
         public int PartitaId { get; set; }
         public virtual Partita Partita { get; set; }
 
+
         [Required]
         public int NumeroMossa { get; set; }
 
-        [ForeignKey("Giocatore")]
-        public string GiocatoreSessionId { get; set; }
-        public virtual Giocatore Giocatore { get; set; }
+
+        [ForeignKey("Player")]
+        public int PlayerId { get; set; }
+        public virtual Player Player { get; set; }
+
 
         [Required]
         public int PezzoId { get; set; }  // ID del pezzo
         public virtual Pezzo Pezzo { get; set; }  // Relazione con la classe Pezzo
 
+
         [Required]
         [MaxLength(5)]
         public string PosizioneIniziale { get; set; }  // Es. "e2"DS
 
+
         [Required]
         [MaxLength(5)]
         public string PosizioneFinale { get; set; }  // Es. "e4"
+
 
         public Mossa() 
         {

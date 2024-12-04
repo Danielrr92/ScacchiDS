@@ -7,18 +7,15 @@ namespace ScacchiDS.Server.Controllers
     public class GameController : Controller
     {
         private readonly GameService _gameService;
+        private readonly ILogger<GameController> _logger;
 
-        public GameController(GameService gameServce)
+        public GameController(GameService gameServce, ILogger<GameController> logger)
         {
             _gameService = gameServce;
+            _logger = logger;
         }
 
 
-        [HttpPost("CreaPartita")]
-        public async Task<IActionResult> CreaPartita([FromBody] Giocatore giocatore1, [FromBody] Giocatore giocatore2)
-        {
-            //Partita partita = await _partitaService.CreaPartita(giocatore1, giocatore2);
-            return Ok(); //Ok(partita);
-        }
+        
     }
 }

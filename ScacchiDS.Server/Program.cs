@@ -13,6 +13,12 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkSto
 builder.Services.AddScoped<GameService>();
 builder.Services.AddControllers();
 
+// Aggiungi il logging integrato (di default è configurato)
+builder.Logging.ClearProviders(); // Rimuove i logger di default
+builder.Logging.AddConsole();    // Aggiunge il logger sulla console
+builder.Logging.AddDebug();      // Aggiunge il logger per il debug
+builder.Logging.AddEventSourceLogger(); // Logger per eventi di sistema (opzionale)
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
