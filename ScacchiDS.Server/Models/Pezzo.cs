@@ -17,7 +17,7 @@ namespace ScacchiDS.Server.Models
         public int ColoreId { get; set; }
         public virtual Colore? Colore { get; set; }
 
-        public string? posizione {  get; set; }
+        public string? Posizione {  get; set; }
 
 
         [MaxLength(1)]
@@ -30,10 +30,10 @@ namespace ScacchiDS.Server.Models
         public const string SIMBOLO_CAVALLO = "C";
         public const string SIMBOLO_PEDONE = "P";
 
-        public string notazionePerDTO { 
+        public string NotazionePerDTO { 
             get 
             {
-                return Simbolo + posizione + " " + ColoreId;
+                return Simbolo + Posizione + " " + ColoreId;
             } 
             set
             {

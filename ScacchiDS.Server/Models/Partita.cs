@@ -12,7 +12,7 @@ namespace ScacchiDS.Server.Models
 
 
         [Required]
-        public string? sessionId { get; set; }
+        public string? SessionId { get; set; }
 
 
         [Required]
@@ -46,7 +46,7 @@ namespace ScacchiDS.Server.Models
         {
             DataInizio = DateTime.Now;
             EsitoPartitaId = EsitoPartita.ID_ESITO_IN_CORSO;
-            sessionId = gameSessionId;
+            SessionId = gameSessionId;
             Player1 = player1;
             Player2 = player2;
         }

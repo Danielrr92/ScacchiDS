@@ -9,7 +9,7 @@ namespace ScacchiDS.Server.Models
 
         [Required]
         [MaxLength(20)]
-        public string Descrizione { get; set; }  // Es. "Pedone", "Torre", ecc.
+        public required string Descrizione { get; set; }  // Es. "Pedone", "Torre", ecc.
 
         public const int RE = 1;
         public const int DONNA = 2;

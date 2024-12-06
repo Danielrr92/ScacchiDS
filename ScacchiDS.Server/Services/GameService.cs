@@ -26,8 +26,8 @@ namespace ScacchiDS.Server.Services
                 bool isPlayer1White = _random.Next(0, 2) == 0;
 
                 // Creazione dei giocatori
-                Player player1 = new() { sessionId = sessionIdPlayer1, ColoreId = isPlayer1White ? Colore.BIANCO : Colore.NERO };
-                Player player2 = new() { sessionId = sessionIdPlayer2, ColoreId = isPlayer1White ? Colore.NERO : Colore.BIANCO };
+                Player player1 = new() { SessionId = sessionIdPlayer1, ColoreId = isPlayer1White ? Colore.BIANCO : Colore.NERO };
+                Player player2 = new() { SessionId = sessionIdPlayer2, ColoreId = isPlayer1White ? Colore.NERO : Colore.BIANCO };
 
                 
 

@@ -11,7 +11,7 @@ namespace ScacchiDS.Server.Models
 
 
         [Required]
-        public string? sessionId { get; set; }
+        public string? SessionId { get; set; }
 
 
         //se l'utente è anche registrato mi salvo l'id dell'utente legandolo al giocatore, se invece è un ospite questa proprietà rimane null
