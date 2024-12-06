@@ -1,47 +1,71 @@
+import React, { useContext, useState, useEffect } from "react";
 import './Home.css';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import WebSocketContext from "../contexts/WebSocketContext";
 
 const Home = () => {
     const navigate = useNavigate();
-    let ws;
+    const { webSocketService, status, gameId, connectWebSocket } = useContext(WebSocketContext);
+    const [isConnecting, setIsConnecting] = useState(false);
+    const [isWaitingForOpponent, setIsWaitingForOpponent] = useState(false);
 
-    const startNewGame = () => {
+    const startNewGame = async () => {
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        setIsConnecting(true);
+        try
+        {
+            if (await connectWebSocket()) {
+                setIsConnecting(false);
+                // Invia richiesta di trovare un match
+                webSocketService.send({ action: "find_match" });
+                setIsWaitingForOpponent(true)
+                // Listener per ricevere il messaggio "match_found"
+                const handleMessage = (message) => {
+                    if (message.action === "match_found") {
+                        console.log("Match found:", message);
+                        const newGameId = message.data.GameSessionId;
+                        localStorage.setItem("gameId", newGameId); // Memorizza l'ID partita
+                        navigate("/game", { state: { boardState: message.boardState, gameId: newGameId } });
+                    }
+                };
 
-        ws = new WebSocket('wss://localhost:7225/ws');
-        ws.onopen = () => {
-            console.log('WebSocket connected');
-            ws.send(JSON.stringify({ action: 'find_match' }));
-        };
+                // Aggiungi il listener
+                webSocketService.addListener(handleMessage);
 
-        ws.onmessage = (event) => {
-            const message = JSON.parse(event.data);
-            if (message.action === 'match_found') {
-                console.log('Match found!', message);
-                // Naviga alla scacchiera con i dettagli del match
-                console.log('Navigating to the game page...');
-                //navigate('/game'); // Cambia l'URL e naviga alla pagina del gioco
+                // Rimuovi il listener quando il componente si smonta
+                return () => {
+                    webSocketService.removeListener(handleMessage);
+                    
+                };
+            } else {
+                
+                console.error("Impossible to connect. try again later.");
             }
-        };
-
-        ws.onclose = () => {
-            // se cambio pagina il ws non dovrebbe chiudersi, ma restare aperto
-            console.log('WebSocket disconnected');
-        };
+            setIsConnecting(false);
+        } catch (error) {
+            setIsConnecting(false);
+            console.error("Error connecting to WebSocket:", error);
+        }
     };
 
-    useEffect(() => {
-        return () => {
-            if (ws) ws.close();
-        };
-    }, []);
+    const handleConnect = async () => {
+        if (status !== "connected") {
+            await connectWebSocket(); // Connetti se non connesso
+        }
+    };
 
 
     return (
-        <div style={{ padding: '20px' }}>
+        <div style={{ padding: "20px" }}>
             <h1>Play a New Game</h1>
-            <button id="btnCreateGame" onClick={startNewGame}>
-                NEW GAME
+            <p>Status: {status}</p>
+            <br />
+            <button
+                id="btnCreateGame"
+                onClick={startNewGame}
+                disabled={status == "connected" || isConnecting}
+            >
+                {isConnecting ? "Connecting..." : isWaitingForOpponent ? "Waiting for opponent..." : "NEW GAME"}
             </button>
         </div>
     );

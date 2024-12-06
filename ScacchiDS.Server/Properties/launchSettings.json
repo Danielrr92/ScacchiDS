@@ -1,11 +1,10 @@
 {
   "$schema": "http://json.schemastore.org/launchsettings.json",
-
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:25563",
+      "applicationUrl": "http://localhost:5213",
       "sslPort": 44382
     }
   },
@@ -13,34 +12,26 @@
     "http": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": true,
-      "launchUrl": "Auth/LoginAdministrator",
+      "launchBrowser": false, // Disattiva il lancio automatico del browser
       "applicationUrl": "http://localhost:5213",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "https": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": true,
-      "launchUrl": "Auth/LoginAdministrator",
+      "launchBrowser": false, // Disattiva il lancio automatico del browser
       "applicationUrl": "https://localhost:7225;http://localhost:5213",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "launchUrl": "Auth/LoginAdministrator",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy"
-      }
+
+    "Edge": {
+      "commandName": "Executable",
+      "commandLineArgs": " --new-window http://localhost:5213", // Aggiungi qui l'URL dell'app
+      "executablePath": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe" // Percorso di Edge
     }
   }
 }
-

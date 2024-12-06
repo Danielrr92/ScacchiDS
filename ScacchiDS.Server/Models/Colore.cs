@@ -10,7 +10,7 @@ namespace ScacchiDS.Server.Models
 
         [Required]
         [MaxLength(6)]
-        public string Descrizione { get; set; }  // Bianco - Nero
+        public required string Descrizione { get; set; }  // Bianco - Nero
 
         public const int BIANCO = 1;
         public const int NERO = 2;

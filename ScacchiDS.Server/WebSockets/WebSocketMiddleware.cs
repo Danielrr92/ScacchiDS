@@ -1,15 +1,9 @@
 ﻿namespace ScacchiDS.Server.WebSockets
 {
-    public class WebSocketMiddleware
+    public class WebSocketMiddleware(RequestDelegate next, WebSocketHandler webSocketHandler)
     {
-        private readonly RequestDelegate _next;
-        private readonly WebSocketHandler _webSocketHandler;
-
-        public WebSocketMiddleware(RequestDelegate next, WebSocketHandler webSocketHandler)
-        {
-            _next = next;
-            _webSocketHandler = webSocketHandler;
-        }
+        private readonly RequestDelegate _next = next;
+        private readonly WebSocketHandler _webSocketHandler = webSocketHandler;
 
         public async Task InvokeAsync(HttpContext context)
         {

@@ -7,23 +7,19 @@ using System.Text.Json;
 
 namespace ScacchiDS.Server.WebSockets
 {
-    public class WebSocketHandler
+    public class WebSocketHandler(IServiceProvider serviceProvider, ILogger<GameService> logger)
     {
         // Giocatori connessi in attesa di match
-        private static readonly ConcurrentBag<(string SessionId, WebSocket Socket)> WaitingPlayers = new ConcurrentBag<(string, WebSocket)>();
+        private static readonly ConcurrentBag<(string SessionId, WebSocket Socket)> WaitingPlayers = [];
 
         // Tutti i giocatori che hanno cliccato nuova partita
-        private static readonly ConcurrentBag<(string SessionId, WebSocket Socket)> ConnectedPlayers = new ConcurrentBag<(string, WebSocket)>();
+        private static readonly ConcurrentBag<(string SessionId, WebSocket Socket)> ConnectedPlayers = [];
 
         // Lista delle partite con gli ID dei giocatori che vi hanno preso parte
-        private static readonly ConcurrentDictionary<string, (string Player1, string Player2)> Games = new ConcurrentDictionary<string, (string, string)>();
+        private static readonly ConcurrentDictionary<string, (string Player1, string Player2)> Games = new();
 
-        private readonly IServiceProvider _serviceProvider;
-
-        public WebSocketHandler(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
+        private readonly IServiceProvider _serviceProvider = serviceProvider;
+        private readonly ILogger<GameService> _logger = logger;
 
         public async Task HandleConnectionAsync(HttpContext context)
         {
@@ -41,40 +37,40 @@ namespace ScacchiDS.Server.WebSockets
         {
 
             string sessionIdConnectedPlayer = context.User?.Identity?.Name ?? Guid.NewGuid().ToString();
-            if (WaitingPlayers.Count > 0)
+            if (!WaitingPlayers.IsEmpty)
             {
-                var opponent = WaitingPlayers.FirstOrDefault();
+                var (SessionId, Socket) = WaitingPlayers.FirstOrDefault(); //opponent
                 WaitingPlayers.TryTake(out var _); // Rimuovi l'avversario dalla lista di attesa
 
                 // Aggiungi i giocatori nella lista dei connessi
                 ConnectedPlayers.Add((sessionIdConnectedPlayer, webSocket));
-                ConnectedPlayers.Add((opponent.SessionId, opponent.Socket));
+                ConnectedPlayers.Add((SessionId, Socket));
 
                 // Crea il nuovo match
                 var gameSessionId = Guid.NewGuid().ToString();
-                Games[gameSessionId] = (sessionIdConnectedPlayer, opponent.SessionId);
+                Games[gameSessionId] = (sessionIdConnectedPlayer, SessionId);
                 try
                 {
-                    using (var scope = _serviceProvider.CreateScope())
-                    {
-                        GameService gameService = scope.ServiceProvider.GetRequiredService<GameService>();
-                        GameDto gameDTO = await gameService.CreateNewGameAsync(gameSessionId, sessionIdConnectedPlayer, opponent.SessionId);
+                    using var scope = _serviceProvider.CreateScope();
 
-                        // Notifica ai giocatori che la partita è stata creata
-                        await NotifyGameCreated(webSocket, opponent.Socket, gameDTO);
-                    }
-                        
+                    GameService gameService = scope.ServiceProvider.GetRequiredService<GameService>();
+                    GameDto gameDTO = await gameService.CreateNewGameAsync(gameSessionId, sessionIdConnectedPlayer, SessionId);
+
+                    // Notifica ai giocatori che la partita è stata creata
+                    await NotifyGameCreated(webSocket, Socket, gameDTO);
+
                 }
                 catch (Exception ex)
                 {
-
+                    _logger.LogError(ex, "ProcessWebSocketAsync-mio");
                     throw;
                 }
-                
+
             }
             else
             {
                 WaitingPlayers.Add((sessionIdConnectedPlayer, webSocket));
+                await NotifyWaitingForOpponent(webSocket);
             }
 
             await ReceiveMessagesAsync(webSocket);
@@ -97,13 +93,26 @@ namespace ScacchiDS.Server.WebSockets
             }
             catch (Exception ex)
             {
-
+                _logger.LogError(ex, "ErroreNotifyGameCreated-mio");
                 throw;
             }
-            
         }
 
-        private async Task ReceiveMessagesAsync(WebSocket webSocket)
+        private async Task NotifyWaitingForOpponent(WebSocket player1)
+        {
+            try
+            {
+                var message = Encoding.UTF8.GetBytes("{\"action\":\"waiting_opponent\"}");
+                await player1.SendAsync(new ArraySegment<byte>(message), WebSocketMessageType.Text, true, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "ErroreNotifyGameCreated-mio");
+                throw;
+            }
+        }
+
+        private static async Task ReceiveMessagesAsync(WebSocket webSocket)
         {
             var buffer = new byte[1024 * 4];
             while (webSocket.State == WebSocketState.Open)
@@ -118,7 +127,7 @@ namespace ScacchiDS.Server.WebSockets
             }
         }
 
-        private void RemovePlayerFromLists(WebSocket webSocket)
+        private static void RemovePlayerFromLists(WebSocket webSocket)
         {
             // Rimuovi il giocatore da entrambe le liste (connessi e in attesa)
             var player = ConnectedPlayers.FirstOrDefault(p => p.Socket == webSocket);

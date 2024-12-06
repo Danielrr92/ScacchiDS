@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using ScacchiDS.Server.Data;
+using ScacchiDS.Server.Models;
 using ScacchiDS.Server.Services;
 using ScacchiDS.Server.WebSockets;
 
@@ -9,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 builder.Services.AddScoped<GameService>();
 builder.Services.AddControllers();
 
@@ -55,11 +57,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseWebSockets();
 app.UseMiddleware<WebSocketMiddleware>();
-app.MapControllers();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Auth}/{action=LoginAdministrator}/{id?}"); // Imposta il routing principale
 
-
+app.MapControllers();
 
 app.Run();

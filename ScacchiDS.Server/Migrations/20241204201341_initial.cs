@@ -1,14 +1,11 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-#nullable disable
-
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
 namespace ScacchiDS.Server.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -326,7 +323,7 @@ namespace ScacchiDS.Server.Migrations
 
             migrationBuilder.InsertData(
                 table: "Colori",
-                columns: new[] { "Id", "Descrizione" },
+                columns: ["Id", "Descrizione"],
                 values: new object[,]
                 {
                     { 1, "Bianco" },
@@ -335,7 +332,7 @@ namespace ScacchiDS.Server.Migrations
 
             migrationBuilder.InsertData(
                 table: "EsitiPartita",
-                columns: new[] { "Id", "Descrizione" },
+                columns: ["Id", "Descrizione"],
                 values: new object[,]
                 {
                     { 1, "Vittoria Bianco" },
@@ -346,7 +343,7 @@ namespace ScacchiDS.Server.Migrations
 
             migrationBuilder.InsertData(
                 table: "TipiPezzo",
-                columns: new[] { "Id", "Descrizione" },
+                columns: ["Id", "Descrizione"],
                 values: new object[,]
                 {
                     { 1, "Re" },
