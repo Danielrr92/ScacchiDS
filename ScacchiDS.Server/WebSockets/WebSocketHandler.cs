@@ -29,52 +29,20 @@ namespace ScacchiDS.Server.WebSockets
                 return;
             }
 
+            //connessione riuscita
             var webSocket = await context.WebSockets.AcceptWebSocketAsync();
             await ProcessWebSocketAsync(webSocket, context);
         }
 
         private async Task ProcessWebSocketAsync(WebSocket webSocket, HttpContext context)
         {
-
-            string sessionIdConnectedPlayer = context.User?.Identity?.Name ?? Guid.NewGuid().ToString();
-            if (!WaitingPlayers.IsEmpty)
-            {
-                var (SessionId, Socket) = WaitingPlayers.FirstOrDefault(); //opponent
-                WaitingPlayers.TryTake(out var _); // Rimuovi l'avversario dalla lista di attesa
-
-                // Aggiungi i giocatori nella lista dei connessi
-                ConnectedPlayers.Add((sessionIdConnectedPlayer, webSocket));
-                ConnectedPlayers.Add((SessionId, Socket));
-
-                // Crea il nuovo match
-                var gameSessionId = Guid.NewGuid().ToString();
-                Games[gameSessionId] = (sessionIdConnectedPlayer, SessionId);
-                try
-                {
-                    using var scope = _serviceProvider.CreateScope();
-
-                    GameService gameService = scope.ServiceProvider.GetRequiredService<GameService>();
-                    GameDto gameDTO = await gameService.CreateNewGameAsync(gameSessionId, sessionIdConnectedPlayer, SessionId);
-
-                    // Notifica ai giocatori che la partita è stata creata
-                    await NotifyGameCreated(webSocket, Socket, gameDTO);
-
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "ProcessWebSocketAsync-mio");
-                    throw;
-                }
-
-            }
-            else
-            {
-                WaitingPlayers.Add((sessionIdConnectedPlayer, webSocket));
-                await NotifyWaitingForOpponent(webSocket);
-            }
-
-            await ReceiveMessagesAsync(webSocket);
+            //connessione riuscita - in attesa di messaggi            ( forse devo mandare un messaggio al client di connessione effettuata ma non so ancora se è corretto )
+            await ReceiveMessagesAsync(webSocket, context);
         }
+
+
+
+
 
         private async Task NotifyGameCreated(WebSocket player1, WebSocket player2, GameDto gameDTO)
         {
@@ -112,13 +80,76 @@ namespace ScacchiDS.Server.WebSockets
             }
         }
 
-        private static async Task ReceiveMessagesAsync(WebSocket webSocket)
+        private async Task ReceiveMessagesAsync(WebSocket webSocket, HttpContext context)
         {
             var buffer = new byte[1024 * 4];
             while (webSocket.State == WebSocketState.Open)
             {
                 var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-                if (result.MessageType == WebSocketMessageType.Close)
+
+                //gestione messaggi ricevuti dal client
+                if (result.MessageType == WebSocketMessageType.Text)
+                {
+                    var receivedMessage = Encoding.UTF8.GetString(buffer, 0, result.Count);
+
+                    // Deserializzazione
+                    var webSocketMessage = WebSocketMessage.FromJson(receivedMessage);
+
+                    switch (webSocketMessage.action)
+                    {
+                        case "find_match":
+                            
+                            string sessionIdConnectedPlayer = context.User?.Identity?.Name ?? Guid.NewGuid().ToString();
+                            if (!WaitingPlayers.IsEmpty)
+                            {
+                                var (SessionId, Socket) = WaitingPlayers.FirstOrDefault(); //opponent
+                                WaitingPlayers.TryTake(out var _); // Rimuovi l'avversario dalla lista di attesa
+
+                                // Aggiungi i giocatori nella lista dei connessi
+                                ConnectedPlayers.Add((sessionIdConnectedPlayer, webSocket));
+                                ConnectedPlayers.Add((SessionId, Socket));
+
+                                // Crea il nuovo match
+                                var gameSessionId = Guid.NewGuid().ToString();
+                                Games[gameSessionId] = (sessionIdConnectedPlayer, SessionId);
+                                try
+                                {
+                                    using var scope = _serviceProvider.CreateScope();
+
+                                    GameService gameService = scope.ServiceProvider.GetRequiredService<GameService>();
+                                    GameDto gameDTO = await gameService.CreateNewGameAsync(gameSessionId, sessionIdConnectedPlayer, SessionId);
+
+                                    // Notifica ai giocatori che la partita è stata creata
+                                    await NotifyGameCreated(webSocket, Socket, gameDTO);
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError(ex, "ProcessWebSocketAsync-mio");
+                                    throw;
+                                }
+
+                            }
+                            else
+                            {
+                                WaitingPlayers.Add((sessionIdConnectedPlayer, webSocket));
+                                await NotifyWaitingForOpponent(webSocket);
+                            }
+                            Console.WriteLine("Avvia ricerca partita...");
+                            // Usa il Payload se necessario
+                            break;
+
+                        case "join_game":
+                            Console.WriteLine("Unisciti alla partita...");
+                            break;
+
+                        default:
+                            Console.WriteLine($"Azione non riconosciuta: {webSocketMessage.action}");
+                            break;
+                    }
+
+                }
+                else if (result.MessageType == WebSocketMessageType.Close)
                 {
                     // Rimuovi il giocatore dalle liste
                     RemovePlayerFromLists(webSocket);

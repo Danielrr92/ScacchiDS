@@ -1,0 +1,15 @@
+.piece {
+    cursor: grab;
+    transition: transform 0.2s ease-in-out;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    cursor: grab;
+    position: absolute;
+    z-index: 1000;
+}
+
+    .piece.dragging {
+        cursor: grabbing;
+        z-index: 2000; /* Porta il pezzo in primo piano */
+    }

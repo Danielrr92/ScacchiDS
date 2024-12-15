@@ -9,7 +9,7 @@ const Game = () => {
     const boardState = location.state?.boardState || {}; // Stato della scacchiera passato
 
     return (
-        <div className="game-container">
+        <div>
             <ChessBoard boardState={boardState} />
             <ChessBoardSidebar />
         </div>

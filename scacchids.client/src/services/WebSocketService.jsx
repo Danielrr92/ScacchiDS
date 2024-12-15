@@ -15,9 +15,8 @@ class WebSocketService {
             this.socket = new WebSocket(url);
 
             this.socket.onopen = () => {
-                console.log("WebSocket connected");
                 this.isConnected = true;
-                this.listeners.forEach((listener) => listener("connected"));
+                this.listeners.forEach((listener) => listener(JSON.parse('{ "action":"connected"}')));
                 resolve({ success: true });  // Risolvi la promessa con un valore indicante il successo
             };
 
@@ -30,7 +29,7 @@ class WebSocketService {
             this.socket.onclose = () => {
                 console.warn("WebSocket disconnected");
                 this.isConnected = false;
-                this.listeners.forEach((listener) => listener("disconnected"));
+                this.listeners.forEach((listener) => listener(JSON.parse('{ "action":"disconnected"}')));
                 reject(new Error("WebSocket disconnected"));  // Rifiuta la promessa se la connessione si chiude
             };
 
@@ -52,8 +51,6 @@ class WebSocketService {
 
     send(data) {
         if (this.socket && this.isConnected) {
-            console.log("Entrato nel metodo send del WebSocketService. Data: ");
-            console.log(data);
             this.socket.send(JSON.stringify(data));
         } else {
             console.error("WebSocket is not connected");

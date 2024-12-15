@@ -4,78 +4,102 @@ import webSocketService from "../services/WebSocketService";
 const WebSocketContext = createContext();
 
 export const WebSocketProvider = ({ children }) => {
-    const [status, setStatus] = useState("disconnected");
+    const [webSocketStatus, setWebSocketStatus] = useState("disconnected");
     const [gameId, setGameId] = useState(null); // Memorizza l'ID della partita in corso
+    const [gameStarted, setGameStarted] = useState(false); // Memorizza l'ID della partita in corso
+    const [isWaitingForOpponent, setIsWaitingForOpponent] = useState(false);
 
-    // Funzione per connettersi al WebSocket
-    const connectWebSocket = async () => {
-        if (status === "disconnected") {
+
+
+    // START NEW GAME - connessione + inizio nuova partita
+    const startNewGame = async () => {
+        const connessioneAperta = await connessione();
+        if (!connessioneAperta)
+            return false;
+        sendMessage({ action: "find_match" });
+
+    };
+
+    // Funzione per inviare messaggi tramite WebSocket
+    const sendMessage = (data) => {
+        webSocketService.send(data);
+    };
+
+    const connessione = async () => {
+        console.log("2) Start connessione web socket");
+        if (webSocketStatus === "disconnected") {
             try {
                 const result = await webSocketService.connect("wss://localhost:7225/ws");
-                console.log(result);
-
                 // Verifica se la connessione è avvenuta con successo
                 if (result && result.success) {
-                    setStatus("connected");
-                    console.log('setStatus("connected");');
+                    setWebSocketStatus("connected");
+                    //console.log('setStatus("connected");');
                     return true; // Connessione riuscita
                 } else {
-                    console.error("WebSocket connection failed");
-                    setStatus("disconnected");
+                    //console.error("WebSocket connection failed");
+                    setWebSocketStatus("disconnected");
                     return false; // Connessione fallita
                 }
             } catch (error) {
                 console.error("Error during WebSocket connection:", error);
-                setStatus("disconnected");
+                setWebSocketStatus("disconnected");
                 return false; // Connessione fallita
             }
         }
 
         return false; // Connessione non necessaria se già connessi
+    }
+
+    useEffect(() => {
+        //ascolto dei messaggi dal server
+        const handleMessage = (message) => {
+
+            switch (message.action) {
+                case "connected":
+
+                    break;
+                case "match_found":
+                    setGameId(message.data.gameId);
+                    setGameStarted(true);
+                    break;
+                case "waiting_opponent":
+                    setIsWaitingForOpponent(true);
+                    break;
+
+                case "player_disconnected":
+                    console.warn("Player disconnected:", message.data.playerId);
+                    break;
+
+                case "error":
+                    console.error("Error from server:", message.data);
+                    break;
+
+                default:
+                    console.log("Unknown action:", message.action);
+                    break;
+            }
+
+            // Puoi gestire altre azioni qui
+        };
+
+        webSocketService.addListener(handleMessage);
+        return () => {
+            webSocketService.removeListener(handleMessage);
+        };
+
+    }, []); // Dipendenze necessarie
+
+    //dati accessibili nel contesto da altre parti del codice
+    const webContextData = {
+        isWaitingForOpponent,
+        webSocketStatus,
+        startNewGame,
+        gameId,
+        gameStarted,
     };
-
-    // Funzione per gestire gli eventi di WebSocket
-    const handleEvent = (message) => {
-        if (typeof message === "string") {
-            setStatus(message); // Aggiorna lo stato (e.g., "connected", "disconnected")
-        } else {
-            console.log("Message in context:", message); // Gestisci messaggi specifici se necessario
-        }
-    };
-
-    //useEffect(() => {
-    //    // Verifica se è stato salvato uno stato precedente di connessione
-    //    const savedStatus = localStorage.getItem("websocketStatus");
-    //    const savedGameId = localStorage.getItem("gameId"); // Recupera l'ID partita
-
-    //    if (savedStatus === "connected") {
-    //        setStatus("connected");
-    //        setGameId(savedGameId); // Riprendi l'ID partita salvato
-    //        connectWebSocket(); // Riconnetti automaticamente se lo stato è "connected"
-    //    }
-
-    //    // Aggiungi l'event listener per il WebSocket
-    //    webSocketService.addListener(handleEvent);
-
-    //    // Salva lo stato della connessione e l'ID della partita
-    //    const updateStatus = (newStatus) => {
-    //        setStatus(newStatus);
-    //        localStorage.setItem("websocketStatus", newStatus); // Memorizza lo stato in localStorage
-    //        if (newStatus === "connected" && gameId) {
-    //            localStorage.setItem("gameId", gameId); // Memorizza l'ID partita
-    //        }
-    //    };
-
-    //    // Rimuovi l'event listener al termine
-    //    return () => {
-    //        webSocketService.removeListener(handleEvent);
-    //    };
-    //}, [gameId]); // Solo al montaggio del componente
-
-
 
     return (
-        <WebSocketContext.Provider value={{ webSocketService, status, gameId, connectWebSocket }}>
+        <WebSocketContext.Provider value={{ webContextData }}>
             {children}
         </WebSocketContext.Provider>
     );
