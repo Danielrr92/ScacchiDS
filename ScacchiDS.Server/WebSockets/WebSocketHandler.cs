@@ -4,6 +4,7 @@ using System.Text;
 using System.Collections.Concurrent;
 using ScacchiDS.Server.DTOs;
 using System.Text.Json;
+using Azure;
 
 namespace ScacchiDS.Server.WebSockets
 {
@@ -48,15 +49,26 @@ namespace ScacchiDS.Server.WebSockets
         {
             try
             {
-                var response = new
+                var responsePlayer1 = new
                 {
                     action = "match_found",
-                    data = gameDTO
+                    data = gameDTO,
+                    color = gameDTO.Player1Color,
                 };
 
-                string message = JsonSerializer.Serialize(response);
+                var responsePlayer2 = new
+                {
+                    action = "match_found",
+                    data = gameDTO,
+                    color = gameDTO.Player2Color,
+                };
+
+                string message = JsonSerializer.Serialize(responsePlayer1);
                 var messageBytes = Encoding.UTF8.GetBytes(message);
                 await player1.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+
+                message = JsonSerializer.Serialize(responsePlayer2);
+                messageBytes = Encoding.UTF8.GetBytes(message);
                 await player2.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, true, CancellationToken.None);
             }
             catch (Exception ex)
@@ -98,29 +110,31 @@ namespace ScacchiDS.Server.WebSockets
                     switch (webSocketMessage.action)
                     {
                         case "find_match":
-                            
-                            string sessionIdConnectedPlayer = context.User?.Identity?.Name ?? Guid.NewGuid().ToString();
+
+                            string SessionIdConnectedPlayer = context.User?.Identity?.Name ?? Guid.NewGuid().ToString();
                             if (!WaitingPlayers.IsEmpty)
                             {
-                                var (SessionId, Socket) = WaitingPlayers.FirstOrDefault(); //opponent
+                                //in questo caso sono il secondo giocatore ad aver cliccato new game
+                                var (SessionIdPlayer1, WebSocketPlayer1) = WaitingPlayers.FirstOrDefault(); //opponent (player 1 in attesa)
                                 WaitingPlayers.TryTake(out var _); // Rimuovi l'avversario dalla lista di attesa
 
                                 // Aggiungi i giocatori nella lista dei connessi
-                                ConnectedPlayers.Add((sessionIdConnectedPlayer, webSocket));
-                                ConnectedPlayers.Add((SessionId, Socket));
+                                ConnectedPlayers.Add((SessionIdConnectedPlayer, webSocket)); //second player
+                                ConnectedPlayers.Add((SessionIdPlayer1, WebSocketPlayer1)); //first player
+
 
                                 // Crea il nuovo match
-                                var gameSessionId = Guid.NewGuid().ToString();
-                                Games[gameSessionId] = (sessionIdConnectedPlayer, SessionId);
+                                var gameSessionId = Guid.NewGuid().ToString(); // id della partita
+                                Games[gameSessionId] = (SessionIdConnectedPlayer, SessionIdPlayer1); //
                                 try
                                 {
                                     using var scope = _serviceProvider.CreateScope();
 
                                     GameService gameService = scope.ServiceProvider.GetRequiredService<GameService>();
-                                    GameDto gameDTO = await gameService.CreateNewGameAsync(gameSessionId, sessionIdConnectedPlayer, SessionId);
+                                    GameDto gameDTO = await gameService.CreateNewGameAsync(gameSessionId, SessionIdPlayer1, SessionIdConnectedPlayer);
 
                                     // Notifica ai giocatori che la partita è stata creata
-                                    await NotifyGameCreated(webSocket, Socket, gameDTO);
+                                    await NotifyGameCreated(webSocket, WebSocketPlayer1, gameDTO);
 
                                 }
                                 catch (Exception ex)
@@ -132,7 +146,7 @@ namespace ScacchiDS.Server.WebSockets
                             }
                             else
                             {
-                                WaitingPlayers.Add((sessionIdConnectedPlayer, webSocket));
+                                WaitingPlayers.Add((SessionIdConnectedPlayer, webSocket));
                                 await NotifyWaitingForOpponent(webSocket);
                             }
                             Console.WriteLine("Avvia ricerca partita...");

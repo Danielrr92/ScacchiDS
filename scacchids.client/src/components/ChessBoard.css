@@ -35,13 +35,7 @@
     background-color: #874040;
 }
 
-.piece {
-   
-   /* -ms-user-select: none;
-    -moz-user-select: none;
-    -webkit-user-select: none;
-    user-select: none;*/
-}
+
 
 .bordoScacchiera {
     border: 10px solid #8b742e;

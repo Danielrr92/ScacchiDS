@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 import "./ChessPiece.css";
 import piecesMovementService from '../services/PiecesMovementService';
 
+
 const pieceImages = {
     k: "Black_King.png",
     q: "Black_Queen.png",
@@ -17,7 +18,8 @@ const pieceImages = {
     P: "White_Pawn.png",
 };
 
-const ChessPiece = ({ piece, squareId }) => {
+
+const ChessPiece = ({ piece, position }) => {
     const pieceRef = useRef(null); // Riferimento al pezzo
     const initialPosition = useRef({ x: 0, y: 0, offsetLeft: 0, offsetTop: 0 }); // Posizione iniziale
     const isDraggingRef = useRef(false);
@@ -33,9 +35,10 @@ const ChessPiece = ({ piece, squareId }) => {
     };
 
     const handleMouseUp = (e) => {
-        piecesMovementService.endDrag(e, initialPosition, isDraggingRef, pieceRef)
+        piecesMovementService.endDrag(e, isDraggingRef, pieceRef)
         document.removeEventListener("mousemove", handleMouseMove);
         document.removeEventListener("mouseup", handleMouseUp);
+        //il parent element (square) del pezzo (img) sarà la nuova posizione del pezzo
     };
 
     
@@ -47,7 +50,7 @@ const ChessPiece = ({ piece, squareId }) => {
             alt={piece}
             className={`piece`}
             onMouseDown={handleMouseDown}
-
+            position={position }
         />
     );
 };

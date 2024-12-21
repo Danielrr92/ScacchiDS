@@ -6,36 +6,33 @@ import WebSocketContext from "../contexts/WebSocketContext";
 
 const Home = () => {
     const navigate = useNavigate();
-
-    const { webContextData } = useContext(WebSocketContext);
-
-    const [isStartingNewGame, setIsStartingNewGame] = useState(false);
+    const { webSocketState, gameState } = useContext(WebSocketContext);
 
     const newGame = async () => {
-        //setIsStartingNewGame(true);
-        const gameStarted = await webContextData.startNewGame();
-        //
-
+        await gameState.startNewGame();
     };
 
+
     useEffect(() => {
-        //quando trovo un avversario gameStarted diventa true e faccio redirect alla pagina game
-        if (webContextData.gameStarted) {
-            navigate("/game", { state: { boardState: message.boardState, gameId: newGameId } });
+        // Esegui il redirect solo la prima volta
+        if (gameState.doTheRedirectToGamePage) {
+            navigate("/game"); // Redirect alla pagina della partita
+            gameState.redirectToGamePageDone(); // Resetta lo stato del redirect
         }
-    }, [webContextData.gameStarted]); // Dipendenze necessarie
+    }, [gameState.doTheRedirectToGamePage]);
+
 
     return (
         <div style={{ padding: "20px" }}>
             <h1>Play a New Game</h1>
-            <p>Status: {webContextData.webSocketStatus}</p>
+            <p>Status: {webSocketState.webSocketStatus}</p>
             <br />
             <button
                 id="btnCreateGame"
                 onClick={newGame}
-                disabled={webContextData.webSocketStatus == "connected" || isStartingNewGame}
+                disabled={webSocketState.webSocketStatus == "connected"}
             >
-                {webContextData.isWaitingForOpponent ? "Waiting for opponent..." : "NEW GAME"}
+                {gameState.isWaitingForOpponent ? "Waiting for opponent..." : "NEW GAME"}
             </button>
         </div>
     );

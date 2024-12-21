@@ -1,6 +1,10 @@
-class PiecesMovementService {
+class GameService {
 
     constructor() {
+
+    }
+
+    updatePosition() {
 
     }
 
